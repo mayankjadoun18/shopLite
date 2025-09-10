@@ -113,13 +113,27 @@ flutter test
    ```
 
 
-## Login Credentials: for login screen (fake API Auth)
+
+
+
+## 🔑 Login Credentials (Fake Store API)
 Test accounts (use these as username + password)
+Use these credentials to log in and test authentication:
 
-Username: johnd
-Password: m38rmF$
+- **Username:** `mor_2314`  
+  **Password:** `83r5^_`
 
-Username: mor_2314
-Password: 83r5^_
+- **Username:** `johnd`  
+  **Password:** `m38rmF$`
+
+- **Username:** `donero`  
+  **Password:** `ewedon`
+
+
+⚠️ Note: The Fake Store API uses **username** for authentication.  
+In this app, enter the username in the **Email field** along with the password.
+⚠️ These credentials are provided by [Fake Store API](https://fakestoreapi.com/) and are **only for testing purposes**.
+
+
 
 Note: DummyJSON / Fake Store auth endpoints expect username (not an email). Using these strings as username will work for testing.
