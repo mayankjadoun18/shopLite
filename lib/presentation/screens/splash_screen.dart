@@ -1,42 +1,27 @@
 import 'package:flutter/material.dart';
-import 'catalog_screen.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _goToCatalog();
+  }
+
+  Future<void> _goToCatalog() async {
+    await Future.delayed(const Duration(seconds: 2)); // splash delay
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/catalog');
+  }
 
   @override
   Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final passController = TextEditingController();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
-            TextField(
-              controller: passController,
-              decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CatalogScreen()),
-                );
-              },
-              child: const Text("Login"),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

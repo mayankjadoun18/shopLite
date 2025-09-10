@@ -1,43 +1,8 @@
-// import 'package:flutter/material.dart';
-//
-// class ProductDetailScreen extends StatelessWidget {
-//   final Map<String, dynamic> product;
-//   const ProductDetailScreen({super.key, required this.product});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text(product['title'])),
-//       body: Column(
-//         children: [
-//           Hero(
-//             tag: "product-${product['id']}",
-//             child: Image.network(product['image'], height: 200),
-//           ),
-//           const SizedBox(height: 20),
-//           Text(
-//             product['title'],
-//             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//           ),
-//           Text("\$${product['price']}"),
-//           const SizedBox(height: 20),
-//           ElevatedButton(
-//             onPressed: () {
-//               ScaffoldMessenger.of(
-//                 context,
-//               ).showSnackBar(const SnackBar(content: Text("Added to Cart")));
-//             },
-//             child: const Text("Add to Cart"),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/product_model.dart';
 import '../providers/cart_provider.dart';
+import '../providers/favorites_provider.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   final Product product;
@@ -46,8 +11,43 @@ class ProductDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartProvider); // ✅ rebuilds when cart changes
+    final favorites = ref.watch(favoritesProvider);
+
+    // ✅ Always derived from provider (auto-refreshes)
+    // final isInCart = cart.containsKey(product.id);
+    final isInCart = ref.read(cartProvider.notifier).isInCart(product.id);
+
+    final isFavorite = favorites.contains(product.id);
+
     return Scaffold(
-      appBar: AppBar(title: Text(product.title)),
+      appBar: AppBar(
+        title: Text(product.title),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: Colors.red,
+            ),
+            onPressed: () {
+              ref
+                  .read(favoritesProvider.notifier)
+                  .toggleFavorite(product.id.toString());
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isFavorite
+                        ? "Removed from favorites"
+                        : "Added to favorites",
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -69,25 +69,46 @@ class ProductDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              "\$${product.price}",
+              "\$${product.price.toStringAsFixed(2)}",
               style: const TextStyle(fontSize: 18, color: Colors.green),
             ),
             const SizedBox(height: 20),
             Text(product.description, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 30),
+
+            // ✅ Add / Remove toggle button
             Center(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Add product to cart using cartProvider
-                  ref.read(cartProvider.notifier).addToCart(product);
+                  final cartNotifier = ref.read(cartProvider.notifier);
 
-                  // Show snackbar confirmation
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Added to Cart")),
-                  );
+                  if (isInCart) {
+                    cartNotifier.removeFromCart(product.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("${product.title} removed from cart"),
+                      ),
+                    );
+                  } else {
+                    cartNotifier.addToCart(product);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("${product.title} added to cart")),
+                    );
+                  }
                 },
-                icon: const Icon(Icons.add_shopping_cart),
-                label: const Text("Add to Cart"),
+                icon: Icon(
+                  isInCart
+                      ? Icons.remove_shopping_cart
+                      : Icons.add_shopping_cart,
+                ),
+                label: Text(isInCart ? "Remove from Cart" : "Add to Cart"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isInCart ? Colors.red : Colors.blue,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
               ),
             ),
           ],

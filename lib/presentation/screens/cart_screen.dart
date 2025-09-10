@@ -11,32 +11,73 @@ class CartScreen extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
 
-    double total = cart.fold(0, (sum, item) => sum + item.price);
+    // Convert Map values to List for safe access
+    final items = cart.values.toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text("Cart")),
-      body: cart.isEmpty
+      body: items.isEmpty
           ? const Center(child: Text("Your cart is empty"))
           : Column(
               children: [
                 Expanded(
                   child: ListView.builder(
-                    itemCount: cart.length,
+                    itemCount: items.length,
                     itemBuilder: (context, index) {
-                      final item = cart[index];
-                      return ListTile(
-                        leading: Image.network(
-                          item.image,
-                          width: 50,
-                          height: 50,
+                      final item = items[index]; // Safe: non-null CartItem
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                        title: Text(item.title),
-                        subtitle: Text("\$${item.price}"),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            cartNotifier.removeFromCart(item);
-                          },
+                        child: ListTile(
+                          leading: Image.network(
+                            item.product.image,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
+                          title: Text(item.product.title),
+                          subtitle: Text(
+                            "\$${item.product.price.toStringAsFixed(2)} x ${item.quantity}",
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline),
+                                onPressed: () {
+                                  cartNotifier.updateQuantity(
+                                    item.product.id,
+                                    item.quantity - 1,
+                                  );
+                                },
+                              ),
+                              Text("${item.quantity}"),
+                              IconButton(
+                                icon: const Icon(Icons.add_circle_outline),
+                                onPressed: () {
+                                  cartNotifier.updateQuantity(
+                                    item.product.id,
+                                    item.quantity + 1,
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  cartNotifier.removeFromCart(item.product.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Item removed from cart"),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -45,9 +86,18 @@ class CartScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        "Total: \$${total.toStringAsFixed(2)}",
+                        "Subtotal: \$${cartNotifier.subtotal.toStringAsFixed(2)}",
+                      ),
+                      Text("Tax: \$${cartNotifier.tax.toStringAsFixed(2)}"),
+                      Text(
+                        "Shipping: \$${cartNotifier.shipping.toStringAsFixed(2)}",
+                      ),
+                      const Divider(),
+                      Text(
+                        "Total: \$${cartNotifier.total.toStringAsFixed(2)}",
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -55,11 +105,10 @@ class CartScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 10),
                       ElevatedButton(
-                        onPressed: cart.isEmpty
+                        onPressed: items.isEmpty
                             ? null
-                            : () {
-                                // Clear cart after order
-                                cartNotifier.state = [];
+                            : () async {
+                                await cartNotifier.placeOrder();
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
