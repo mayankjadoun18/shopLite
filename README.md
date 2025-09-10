@@ -111,3 +111,15 @@ flutter test
    ```bash
    flutter run
    ```
+
+
+## Login Credentials: for login screen (fake API Auth)
+Test accounts (use these as username + password)
+
+Username: johnd
+Password: m38rmF$
+
+Username: mor_2314
+Password: 83r5^_
+
+Note: DummyJSON / Fake Store auth endpoints expect username (not an email). Using these strings as username will work for testing.
