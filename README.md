@@ -17,7 +17,8 @@ It demonstrates end-to-end app flow with **authentication, catalog browsing, pro
 
 ---
 
-## 🖼️ Screenshots
+## 🖼️ Demo(video) & Screenshots 
+https://drive.google.com/drive/folders/1y-I3WOWqXAsZ2Z90MeEALTYRhjW9OM_N?usp=sharing
 
 
 
@@ -55,17 +56,11 @@ flutter pub get
 flutter run
 ```
 
-### iOS
-```bash
-cd ios
-pod install
-cd ..
-flutter run
-```
+ 
 
-*(Requires Xcode setup for iOS.)*
 
----
+
+
 
 ## 🧪 Running Tests
 ```bash
@@ -106,7 +101,7 @@ flutter test
 ## 🚀 Getting Started
 1. Clone the repo  
    ```bash
-   git clone https://github.com/<your-username>/shoplite.git
+   git clone https://github.com/mayankjadoun18/shopLite.git
    ```
 2. Install dependencies  
    ```bash
